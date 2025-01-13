@@ -41,6 +41,8 @@ namespace infini
             if (addr_size > 0) {
               free_blocks[addr + size] = addr_size;
             }
+            this->used += size;
+            this->peak = std::max(this->used, this->peak);
             return addr;
           }
         }
@@ -63,6 +65,7 @@ namespace infini
         while (it != free_blocks.end() && it->first <= addr + size) {
             rhs = it->first + it->second;
             auto jt = it; jt++;
+            this->used += it->second;
             free_blocks.erase(it);
             it = jt;
         }
@@ -70,10 +73,12 @@ namespace infini
             auto jt = it; jt--;
             if (jt->first + jt->second >= addr) {
                 lhs = jt->first;
+                this->used += jt->second;
                 free_blocks.erase(jt);
             }
         }
         free_blocks[lhs] = rhs - lhs;
+        this->used -= (rhs - lhs);
     }
 
     void *Allocator::getPtr()
