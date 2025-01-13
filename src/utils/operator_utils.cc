@@ -9,8 +9,25 @@ Shape infer_broadcast(const Shape &A, const Shape &B) {
     // TODO：对 A 和 B 进行双向广播，返回广播后的形状。
     // REF: https://github.com/onnx/onnx/blob/main/docs/Broadcasting.md
     // =================================== 作业 ===================================
-    
-    return {};
+    Shape broadcasted_shape = vector<ShapeElem>(std::max(A.size(), B.size()), 0);
+    auto it_A = A.rbegin(), it_B = B.rbegin();
+    auto it_broadcasted = broadcasted_shape.rbegin();
+    while (it_broadcasted != broadcasted_shape.rend()) {
+        ShapeElem elem_A = (it_A != A.rend()) ? *it_A : 1;
+        ShapeElem elem_B = (it_B != B.rend()) ? *it_B : 1;
+        if (elem_A != 1 && elem_B != 1) {
+            IT_ASSERT(elem_A == elem_B);
+        }
+        *it_broadcasted = std::max(elem_A, elem_B);
+        if (it_A != A.rend()) {
+            ++it_A;
+        }
+        if (it_B != B.rend()) {
+            ++it_B;
+        }
+        ++it_broadcasted;
+    }
+    return broadcasted_shape;
 }
 
 int get_real_axis(const int &axis, const int &rank) {
